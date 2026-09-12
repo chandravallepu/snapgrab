@@ -7,7 +7,13 @@ import { detectPlatform } from "./url";
 // Environment Variables (production) — same variable name, same value.
 const COBALT_API_URL = import.meta.env.VITE_COBALT_API_URL as string;
 
-function buildCobaltBody(url: string, mode: DownloadMode, platform: Platform) {
+function buildCobaltBody(
+  url: string,
+  mode: DownloadMode,
+  platform: Platform,
+  videoQuality: string,
+  audioBitrate: string,
+) {
   const body: Record<string, unknown> = {
     url,
     downloadMode: mode === "audio" ? "audio" : "auto",
@@ -16,9 +22,9 @@ function buildCobaltBody(url: string, mode: DownloadMode, platform: Platform) {
 
   if (mode === "audio") {
     body.audioFormat = "mp3";
-    body.audioBitrate = "320";
+    body.audioBitrate = audioBitrate;
   } else {
-    body.videoQuality = "1080";
+    body.videoQuality = videoQuality;
     if (platform === "youtube") {
       body.youtubeVideoCodec = "h264";
       body.youtubeVideoContainer = "mp4";
@@ -34,7 +40,10 @@ function buildCobaltBody(url: string, mode: DownloadMode, platform: Platform) {
 export async function fetchDownload(
   url: string,
   mode: DownloadMode,
+  options?: { videoQuality?: string; audioBitrate?: string },
 ): Promise<SnapGrabResponse> {
+  const videoQuality = options?.videoQuality ?? "1080";
+  const audioBitrate = options?.audioBitrate ?? "320";
   const platform = detectPlatform(url);
   const fallbackTitle = `${PLATFORM_INFO[platform].name} ${mode === "audio" ? "Audio" : "Video"}`;
 
@@ -72,7 +81,7 @@ export async function fetchDownload(
         "Content-Type": "application/json",
         "Accept": "application/json",
       },
-      body: JSON.stringify(buildCobaltBody(url, mode, platform)),
+      body: JSON.stringify(buildCobaltBody(url, mode, platform, videoQuality, audioBitrate)),
       signal: AbortSignal.timeout(20000),
     });
   } catch {

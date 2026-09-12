@@ -14,6 +14,8 @@ function App() {
   const [loadingMp3, setLoadingMp3] = useState(false);
   const [loadingMp4, setLoadingMp4] = useState(false);
   const [lastUrl, setLastUrl] = useState("");
+  const [videoQuality, setVideoQuality] = useState("1080");
+  const [audioBitrate, setAudioBitrate] = useState("320");
 
   const handleFetch = useCallback(async (url: string) => {
     setError(null);
@@ -21,7 +23,7 @@ function App() {
     setLoadingMp4(true);
     setLastUrl(url);
 
-    const res = await fetchDownload(url, "auto");
+    const res = await fetchDownload(url, "auto", { videoQuality });
     setLoadingMp4(false);
 
     if (res.status === "error") {
@@ -32,14 +34,14 @@ function App() {
     } else {
       setResult(res);
     }
-  }, []);
+  }, [videoQuality]);
 
   const handleDownloadMp3 = useCallback(async () => {
     if (!lastUrl) return;
     setError(null);
     setLoadingMp3(true);
 
-    const res = await fetchDownload(lastUrl, "audio");
+    const res = await fetchDownload(lastUrl, "audio", { audioBitrate });
     setLoadingMp3(false);
 
     if (res.status === "error") {
@@ -50,13 +52,28 @@ function App() {
     } else if (res.downloadUrl) {
       triggerDownload(res.downloadUrl, res.filename);
     }
-  }, [lastUrl]);
+  }, [lastUrl, audioBitrate]);
 
-  const handleDownloadMp4 = useCallback(() => {
-    if (result?.downloadUrl) {
-      triggerDownload(result.downloadUrl, result.filename);
+  const handleDownloadMp4 = useCallback(async () => {
+    if (!lastUrl) return;
+    setError(null);
+    setLoadingMp4(true);
+
+    const res = await fetchDownload(lastUrl, "auto", { videoQuality });
+    setLoadingMp4(false);
+
+    if (res.status === "error") {
+      const msg = typeof res.error === "string"
+        ? res.error
+        : res.error?.message || "Couldn't get that quality. Try a different one.";
+      setError(msg);
+    } else if (res.downloadUrl) {
+      setResult(res);
+      triggerDownload(res.downloadUrl, res.filename);
+    } else {
+      setResult(res);
     }
-  }, [result]);
+  }, [lastUrl, videoQuality]);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden">
@@ -69,9 +86,13 @@ function App() {
         <ResultCard
           result={result}
           loadingMp3={loadingMp3}
-          loadingMp4={false}
+          loadingMp4={loadingMp4}
           onDownloadMp3={handleDownloadMp3}
           onDownloadMp4={handleDownloadMp4}
+          videoQuality={videoQuality}
+          onVideoQualityChange={setVideoQuality}
+          audioBitrate={audioBitrate}
+          onAudioBitrateChange={setAudioBitrate}
         />
       )}
 

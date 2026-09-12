@@ -9,6 +9,10 @@ type Props = {
   loadingMp4: boolean;
   onDownloadMp3: () => void;
   onDownloadMp4: () => void;
+  videoQuality: string;
+  onVideoQualityChange: (value: string) => void;
+  audioBitrate: string;
+  onAudioBitrateChange: (value: string) => void;
 };
 
 function triggerDownload(url: string, filename?: string) {
@@ -28,6 +32,10 @@ export function ResultCard({
   loadingMp4,
   onDownloadMp3,
   onDownloadMp4,
+  videoQuality,
+  onVideoQualityChange,
+  audioBitrate,
+  onAudioBitrateChange,
 }: Props) {
   const [imageError, setImageError] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -76,6 +84,46 @@ export function ResultCard({
           {result.author && (
             <p className="mt-1 text-sm text-slate-400">{result.author}</p>
           )}
+
+          {/* Quality selectors */}
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <label className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-slate-400">Video quality</span>
+              <select
+                value={videoQuality}
+                onChange={(e) => onVideoQualityChange(e.target.value)}
+                disabled={loadingMp4 || loadingMp3}
+                className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-emerald-400/60 focus:outline-none disabled:opacity-60"
+              >
+                <option value="2160" className="bg-slate-900">4K (2160p)</option>
+                <option value="1440" className="bg-slate-900">1440p</option>
+                <option value="1080" className="bg-slate-900">1080p (HD)</option>
+                <option value="720" className="bg-slate-900">720p</option>
+                <option value="480" className="bg-slate-900">480p</option>
+                <option value="360" className="bg-slate-900">360p</option>
+                <option value="240" className="bg-slate-900">240p</option>
+                <option value="144" className="bg-slate-900">144p</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-slate-400">Audio quality</span>
+              <select
+                value={audioBitrate}
+                onChange={(e) => onAudioBitrateChange(e.target.value)}
+                disabled={loadingMp4 || loadingMp3}
+                className="rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white focus:border-emerald-400/60 focus:outline-none disabled:opacity-60"
+              >
+                <option value="320" className="bg-slate-900">320 kbps (Best)</option>
+                <option value="256" className="bg-slate-900">256 kbps</option>
+                <option value="128" className="bg-slate-900">128 kbps</option>
+                <option value="96" className="bg-slate-900">96 kbps</option>
+                <option value="64" className="bg-slate-900">64 kbps</option>
+              </select>
+            </label>
+          </div>
+          <p className="mt-1.5 text-xs text-slate-500">
+            If your chosen quality isn't available, the closest one will be used automatically.
+          </p>
 
           {/* Download buttons */}
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
