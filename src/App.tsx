@@ -1,0 +1,95 @@
+import { useState, useCallback } from "react";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
+import { Header } from "@/components/Header";
+import { UrlInput } from "@/components/UrlInput";
+import { ResultCard, ErrorCard } from "@/components/ResultCard";
+import { Features } from "@/components/Features";
+import { Footer } from "@/components/Footer";
+import { fetchDownload } from "@/lib/api";
+import type { DownloadMode, SnapGrabResponse } from "@/lib/types";
+
+function App() {
+  const [result, setResult] = useState<SnapGrabResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loadingMp3, setLoadingMp3] = useState(false);
+  const [loadingMp4, setLoadingMp4] = useState(false);
+  const [lastUrl, setLastUrl] = useState("");
+
+  const handleFetch = useCallback(async (url: string) => {
+    setError(null);
+    setResult(null);
+    setLoadingMp4(true);
+    setLastUrl(url);
+
+    const res = await fetchDownload(url, "auto");
+    setLoadingMp4(false);
+
+    if (res.status === "error") {
+      const msg = typeof res.error === "string"
+        ? res.error
+        : res.error?.message || "Something went wrong. Try a different link.";
+      setError(msg);
+    } else {
+      setResult(res);
+    }
+  }, []);
+
+  const handleDownloadMp3 = useCallback(async () => {
+    if (!lastUrl) return;
+    setError(null);
+    setLoadingMp3(true);
+
+    const res = await fetchDownload(lastUrl, "audio");
+    setLoadingMp3(false);
+
+    if (res.status === "error") {
+      const msg = typeof res.error === "string"
+        ? res.error
+        : res.error?.message || "Couldn't get MP3. Try again.";
+      setError(msg);
+    } else if (res.downloadUrl) {
+      triggerDownload(res.downloadUrl, res.filename);
+    }
+  }, [lastUrl]);
+
+  const handleDownloadMp4 = useCallback(() => {
+    if (result?.downloadUrl) {
+      triggerDownload(result.downloadUrl, result.filename);
+    }
+  }, [result]);
+
+  return (
+    <div className="relative min-h-screen overflow-x-hidden">
+      <AnimatedBackground />
+      <Header />
+      <UrlInput onFetch={handleFetch} loading={loadingMp4} />
+
+      {error && <ErrorCard message={error} />}
+      {result && !error && (
+        <ResultCard
+          result={result}
+          loadingMp3={loadingMp3}
+          loadingMp4={false}
+          onDownloadMp3={handleDownloadMp3}
+          onDownloadMp4={handleDownloadMp4}
+        />
+      )}
+
+      {!result && !error && <Features />}
+      <Footer />
+    </div>
+  );
+}
+
+function triggerDownload(url: string, filename?: string) {
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename || "";
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+export default App;

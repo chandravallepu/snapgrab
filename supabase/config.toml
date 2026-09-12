@@ -1,0 +1,3 @@
+[functions.snapgrab]
+verify_jwt = false
+entrypoint = "./functions/snapgrab/index.ts"
