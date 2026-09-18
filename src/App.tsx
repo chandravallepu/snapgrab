@@ -4,9 +4,13 @@ import { Header } from "@/components/Header";
 import { UrlInput } from "@/components/UrlInput";
 import { ResultCard, ErrorCard } from "@/components/ResultCard";
 import { Features } from "@/components/Features";
+import { HowToUse } from "@/components/HowToUse";
+import { Contact } from "@/components/Contact";
 import { Footer } from "@/components/Footer";
 import { fetchDownload } from "@/lib/api";
-import type { DownloadMode, SnapGrabResponse } from "@/lib/types";
+import { detectPlatform } from "@/lib/url";
+import { PLATFORM_INFO } from "@/lib/types";
+import type { SnapGrabResponse } from "@/lib/types";
 
 function App() {
   const [result, setResult] = useState<SnapGrabResponse | null>(null);
@@ -17,24 +21,26 @@ function App() {
   const [videoQuality, setVideoQuality] = useState("1080");
   const [audioBitrate, setAudioBitrate] = useState("320");
 
-  const handleFetch = useCallback(async (url: string) => {
+  const handleFetch = useCallback((url: string) => {
     setError(null);
     setResult(null);
-    setLoadingMp4(true);
-    setLastUrl(url);
 
-    const res = await fetchDownload(url, "auto", { videoQuality });
-    setLoadingMp4(false);
-
-    if (res.status === "error") {
-      const msg = typeof res.error === "string"
-        ? res.error
-        : res.error?.message || "Something went wrong. Try a different link.";
-      setError(msg);
-    } else {
-      setResult(res);
+    const platform = detectPlatform(url);
+    if (platform === "unknown") {
+      setError(
+        "Unsupported URL. Please paste a link from YouTube, Instagram, TikTok, Facebook, Twitter/X, Pinterest, Snapchat, Reddit, Vimeo, Twitch, Dailymotion, or SoundCloud."
+      );
+      return;
     }
-  }, [videoQuality]);
+
+    setLastUrl(url);
+    setResult({
+      platform,
+      title: `${PLATFORM_INFO[platform].name} Video`,
+      thumbnail: "",
+      status: "success",
+    });
+  }, []);
 
   const handleDownloadMp3 = useCallback(async () => {
     if (!lastUrl) return;
@@ -97,6 +103,8 @@ function App() {
       )}
 
       {!result && !error && <Features />}
+      <HowToUse />
+      <Contact />
       <Footer />
     </div>
   );
@@ -106,8 +114,6 @@ function triggerDownload(url: string, filename?: string) {
   const a = document.createElement("a");
   a.href = url;
   a.download = filename || "";
-  a.target = "_blank";
-  a.rel = "noopener noreferrer";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

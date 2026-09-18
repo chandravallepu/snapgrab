@@ -4,7 +4,12 @@ export function Footer() {
   return (
     <footer className="relative z-10 mt-16 px-5 pb-8 pt-4">
       <div className="mx-auto max-w-2xl text-center">
-        <p className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
+        <div className="flex items-center justify-center gap-4 text-xs text-slate-400">
+          <a href="#how-it-works" className="hover:text-emerald-400">How it works</a>
+          <span className="text-slate-700">•</span>
+          <a href="#contact" className="hover:text-emerald-400">Contact</a>
+        </div>
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-500">
           <span>SnapGrab — for personal use only. Respect copyright.</span>
         </p>
         <p className="mt-1.5 flex items-center justify-center gap-1 text-xs text-slate-600">

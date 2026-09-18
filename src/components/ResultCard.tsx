@@ -15,17 +15,6 @@ type Props = {
   onAudioBitrateChange: (value: string) => void;
 };
 
-function triggerDownload(url: string, filename?: string) {
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename || "";
-  a.target = "_blank";
-  a.rel = "noopener noreferrer";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
 export function ResultCard({
   result,
   loadingMp3,
@@ -207,8 +196,6 @@ export function ResultCard({
                     key={idx}
                     href={item.url}
                     download
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="group relative aspect-square overflow-hidden rounded-xl border border-white/10 bg-black/40 transition-all hover:border-emerald-400/50 hover:shadow-lg hover:shadow-emerald-500/20"
                   >
                     {item.thumb ? (
