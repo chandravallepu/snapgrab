@@ -25,10 +25,6 @@ function buildCobaltBody(
     body.audioBitrate = audioBitrate;
   } else {
     body.videoQuality = videoQuality;
-    if (platform === "youtube") {
-      body.youtubeVideoCodec = "h264";
-      body.youtubeVideoContainer = "mp4";
-    }
     if (platform === "tiktok") {
       body.allowH265 = false;
     }
@@ -170,9 +166,11 @@ export async function fetchDownload(
       platform,
       title: fallbackTitle,
       thumbnail: "",
-      status: "success",
-      downloadUrl: data.tunnel?.[0] || undefined,
-      filename: data.output?.filename,
+      status: "error",
+      error: {
+        message:
+          "This quality needs extra processing we don't support yet. Try a lower video quality (720p or below) and download again.",
+      },
     };
   }
 
