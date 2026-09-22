@@ -1,11 +1,7 @@
 import { useState, FormEvent } from "react";
 import { Mail, CheckCircle2 } from "lucide-react";
 
-function encode(data: Record<string, string>) {
-  return Object.keys(data)
-    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(data[key])}`)
-    .join("&");
-}
+const WEB3FORMS_ACCESS_KEY = "19cf26fe-4f59-47a4-a633-744a712925f7";
 
 export function Contact() {
   const [name, setName] = useState("");
@@ -17,15 +13,28 @@ export function Contact() {
     e.preventDefault();
     setStatus("sending");
     try {
-      await fetch("/", {
+      const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: encode({ "form-name": "contact", name, email, message }),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_ACCESS_KEY,
+          name,
+          email,
+          message,
+        }),
       });
-      setStatus("sent");
-      setName("");
-      setEmail("");
-      setMessage("");
+      const result = await res.json();
+      if (result.success) {
+        setStatus("sent");
+        setName("");
+        setEmail("");
+        setMessage("");
+      } else {
+        setStatus("error");
+      }
     } catch {
       setStatus("error");
     }
